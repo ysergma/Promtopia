@@ -21,13 +21,10 @@ return(
 
 
 const Feed = () => {
-  const [searchText, setSearchText] = useState("")
   const [posts,setPosts]=useState([])
-  const handleSearchChange = (e)=>{
-
-  }
-
-
+  const [searchText, setSearchText] = useState("")
+  const [searchTimeout, setSearchTimeout] = useState(null);
+  const [searchedResults, setSearchedResults] = useState([]);
   useEffect(() => {
     const fetchPosts = async () => {
       const response = await fetch('/api/prompt');
@@ -37,15 +34,50 @@ const Feed = () => {
     };
     fetchPosts();
   }, []);
+  const filterPrompts = (searchtext) => {
+    const regex = new RegExp(searchtext, "i"); // 'i' flag for case-insensitive search
+    return posts.filter(
+      (item) =>
+        regex.test(item.creator.username) ||
+        regex.test(item.tag) ||
+        regex.test(item.prompt)
+    );
+  };
+  const handleSearchChange = (e)=>{
+    clearTimeout(searchTimeout);
+    setSearchText(e.target.value);
+    setSearchTimeout(
+      setTimeout(() => {
+        const searchResult = filterPrompts(e.target.value);
+        setSearchedResults(searchResult);
+      }, 500)
+    );
+
+
+  }
+
+  const handleTagClick = (tag)=>{
+    setSearchText(tag)
+    const searchResults= filterPrompts(tag)
+    setSearchedResults(searchResults)
+  }
+
+
+
   return (
     <section className='feed'>
-        <form action="" className='relative w-full flex-center'>
-            <input type="text" placeholder='search for a tag or a username' value={searchText} onChange={()=>{handleSearchChange}} required className='search_input peer'/>
+        <form  className='relative w-full flex-center'>
+            <input type="text" placeholder='search for a tag or a username' value={searchText} onChange={handleSearchChange} required className='search_input peer'/>
         </form>
-        <PromptCardList
+        {searchText ?        
+         (<PromptCardList
+        data={searchedResults}
+        handleTagClick={handleTagClick}
+        />) : (<PromptCardList
         data={posts}
-        handleTagClick={()=>{}}
-        />
+        handleTagClick={handleTagClick}
+        /> )}
+
     </section>
   )
 }

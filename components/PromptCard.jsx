@@ -3,7 +3,6 @@ import { useState } from 'react'
 import Image from 'next/image'
 import {useSession} from 'next-auth/react'
 import { usePathname, useRouter } from 'next/navigation'
-import { openStdin } from 'process'
 
 const PromptCard = ({post,handleTagClick, handleEdit,handleDelete}) => {
 const [searchText, setSearchText] = useState("")
@@ -16,6 +15,11 @@ const handleCopy = ()=>{
   navigator.clipboard.writeText(post.prompt)
   setTimeout(()=>setCopied(""), 5000)
 }
+const handleProfileClick = ()=>{
+  if(post.creator._id === session?.user.id)router.push("/profile")
+  router.push(`/profile/${post.creator._id}?name=${post.creator.username}`)
+
+}
   return (
     <div className='prompt_card'>
         <div className='flex justify-between items-start gap-5'>
@@ -25,12 +29,14 @@ const handleCopy = ()=>{
                   alt='user_image'
                   width={40}
                   height={40}
-                  className='rounded-full object-contain '
+                  className='rounded-full object-contain cursor-pointer '
+                  onClick={handleProfileClick}
+                  
                 />
 
                 <div className='flex flex-col' >
-                      <h3 className='font-satoshi font-semibold text-gray-900'>{post.creator.username}</h3>
-                      <p className='font-inter text-sm text-gray-500'>{post.creator.email}</p>
+                      <h3 className='font-satoshi font-semibold text-gray-900 cursor-pointer' onClick={handleProfileClick}>{post.creator.username}</h3>
+                      <p className='font-inter text-sm text-gray-500 cursor-pointer' onClick={handleProfileClick}>{post.creator.email}</p>
                 </div>
 
             </div>
